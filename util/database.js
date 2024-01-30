@@ -8,7 +8,6 @@ const mongoConnect = async() => {
         const client = await MongoClient.connect(`mongodb+srv://anujeet98:Hk42VvtrhbulVyXP@cluster0.ijrpm3b.mongodb.net/?retryWrites=true&w=majority`)
         console.log('connected to mongoDb!');
         _db = client.db('shop');  //database name
-        return client;
     }
     catch(err){
         console.log(err);
