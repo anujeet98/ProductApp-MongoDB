@@ -91,6 +91,36 @@ class User{
         }
     }
 
+    async addOrder(){
+        try{
+            const db = getDb();
+            const cartProducts = await this.getCartItems();
+            const order = {
+                products: cartProducts,
+                userId: new mongodb.ObjectId(this._id)
+            }
+            await db.collection('Orders').insertOne(order);
+
+            this.cart.items = [];
+
+            await db.collection('Users').updateOne({_id: new mongodb.ObjectId(this._id)}, {$set: {cart: this.cart}});
+
+        }
+        catch(err){
+            console.error(err);
+        }
+    }
+
+    getOrders(){
+        try{
+            const db = getDb();
+            return db.collection('Orders').find({userId: new mongodb.ObjectId(this._id)}).toArray();
+        }
+        catch(err){
+            console.error(err);
+        }
+    }
+
 
 
 
