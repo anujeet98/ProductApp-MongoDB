@@ -21,6 +21,16 @@ class User{
         }
     }
 
+    static findById(userId){
+        try{
+          const db = getDb();
+          return db.collection('Users').findOne({_id: new mongodb.ObjectId(userId)});  //no next needed as using findOne so only one user. use next with find()
+        }
+        catch(err){
+            console.error(err);
+        }
+    }
+
     addToCart(product){
         try{
             const db = getDb();
@@ -45,19 +55,43 @@ class User{
             });
         }
         catch(err){
-            console.log(err);
+            console.error(err);
         }
     }
 
-    static findById(userId){
+    async getCartItems(){
         try{
-          const db = getDb();
-          return db.collection('Users').findOne({_id: new mongodb.ObjectId(userId)});  //no next needed as using findOne so only one user. use next with find()
+            const db = getDb();
+            const productIds = this.cart.items.map(item => item.productId);
+            const products = await db.collection('Products').find({_id: {$in: productIds}}).toArray();
+            return products.map(product => {
+                return {
+                    ...product,
+                    quantity: this.cart.items.find(item => item.productId.toString() === product._id.toString()).quantity
+                }
+            });
         }
         catch(err){
             console.error(err);
         }
     }
+
+    deleteCartItem(prodId){
+        try{
+            const db = getDb();
+            const updatedCartItems = this.cart.items.filter(item => item.productId.toString() !== prodId.toString());
+            const updatedCart = {items: updatedCartItems};
+            return db.collection('Users').updateOne(
+                {_id: new mongodb.ObjectId(this._id)}, 
+                {$set: {cart: updatedCart}}
+            );
+        }   
+        catch(err){
+            console.error(err);
+        }
+    }
+
+
 
 
 }
