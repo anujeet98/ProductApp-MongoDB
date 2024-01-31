@@ -14,7 +14,7 @@ exports.postAddProduct = async(req, res, next) => {
     const imageUrl = req.body.imageUrl;
     const price = req.body.price;
     const description = req.body.description;
-    const prod = new Product({ title: title, price: price, imageUrl: imageUrl, description: description});
+    const prod = new Product({ title: title, price: price, imageUrl: imageUrl, description: description, userId: req.user});  //moongoose will pick the id fropm the object
     await prod.save();  
     res.redirect('/admin/products');
   }
@@ -76,6 +76,9 @@ exports.postEditProduct = async(req, res, next) => {
 exports.getProducts = async(req, res, next) => {
   try{
       const products = await Product.find();
+      //                 .select('title price -_id')           //mongoose use select to extract specified columns from the string and - for removing id
+      //                 .populate('userId','name');          //mongoose use this to extract other columns from the reference object
+      // console.log(products);
       res.render('admin/products', {
         prods: products,
         pageTitle: 'Admin Products',

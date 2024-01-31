@@ -23,7 +23,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(async(req, res, next) => {
     try{
-        // const user = await User.findById('65b94852940a10870043a1d0');  
+        const user = await User.findById('65ba67cb666a360c30185eee'); 
+        req.user = user;
         // req.user = new User(user.name, user.email, user.cart, user._id);
         next();
     }
@@ -41,6 +42,10 @@ async function connectMongoBb() {
   try{
     // await mongoConnect();
     const result = await mongoose.connect('mongodb+srv://anujeet98:Hk42VvtrhbulVyXP@cluster0.ijrpm3b.mongodb.net/shop?retryWrites=true&w=majority');
+    let user = await User.findById('65ba67cb666a360c30185eee');  
+    if(!user){
+        user = await new User({name: 'Anujeet', email: 'anujeet98@gmail.com', cart: {items: []}}).save();
+    }
     app.listen(3000);
   }
   catch(err){console.log(err);  } 
