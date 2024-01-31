@@ -54,7 +54,6 @@ exports.postEditProduct = async(req, res, next) => {
         const updatedPrice = req.body.price;
         const updatedImageUrl = req.body.imageUrl;
         const updatedDesc = req.body.description;
-        const updatedProduct = new Product({title: updatedTitle, price: updatedPrice, imageUrl: updatedImageUrl, description: updatedDesc});
 
         const product = await Product.findById(prodId);
         if(product){

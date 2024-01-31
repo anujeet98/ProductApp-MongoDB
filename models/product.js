@@ -23,7 +23,7 @@ const ProductSchema = new Schema({
         ref: 'User'
     }
 });
-
+module.exports = mongoose.model('Product', ProductSchema);  //colection name will be products
 // const mongodb = require('mongodb');
 // const {getDb} = require('../util/database');
 
@@ -86,4 +86,4 @@ const ProductSchema = new Schema({
 // }
 
 
-module.exports = mongoose.model('Product', ProductSchema);  //colection name will be products
+
