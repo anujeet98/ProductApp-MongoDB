@@ -14,7 +14,7 @@ exports.postAddProduct = async(req, res, next) => {
     const imageUrl = req.body.imageUrl;
     const price = req.body.price;
     const description = req.body.description;
-    const prod = new Product(title, price, imageUrl, description, null, req.user._id);
+    const prod = new Product({ title: title, price: price, imageUrl: imageUrl, description: description});
     await prod.save();  
     res.redirect('/admin/products');
   }
@@ -54,13 +54,18 @@ exports.postEditProduct = async(req, res, next) => {
         const updatedPrice = req.body.price;
         const updatedImageUrl = req.body.imageUrl;
         const updatedDesc = req.body.description;
+        const updatedProduct = new Product({title: updatedTitle, price: updatedPrice, imageUrl: updatedImageUrl, description: updatedDesc});
 
         const product = await Product.findById(prodId);
         if(product){
-            const updatedProd = new Product(updatedTitle, updatedPrice, updatedImageUrl, updatedDesc, product._id);
-            updatedProd.save();   //contains ID. so update will happen as per save logic written
-            console.log('UPDATED PRODUCT!');
+            product.title = updatedTitle;
+            product.price = updatedPrice;
+            product.imageUrl = updatedImageUrl;
+            product.description = updatedDesc;
+
+            await product.save();
         }
+        console.log('UPDATED PRODUCT!');
         res.redirect('/admin/products');
     }
     catch(err){
@@ -70,7 +75,7 @@ exports.postEditProduct = async(req, res, next) => {
 
 exports.getProducts = async(req, res, next) => {
   try{
-      const products = await Product.fetchAll();
+      const products = await Product.find();
       res.render('admin/products', {
         prods: products,
         pageTitle: 'Admin Products',
@@ -85,7 +90,7 @@ exports.getProducts = async(req, res, next) => {
 exports.postDeleteProduct = async(req, res, next) => {
     try{
         const prodId = req.body.productId;
-        await Product.deleteOne(prodId);
+        await Product.findByIdAndDelete(prodId);
         console.log('DESTROYED PRODUCT');
         res.redirect('/admin/products');
     }
