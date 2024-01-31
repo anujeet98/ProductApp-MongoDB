@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Product = require('../models/product');
+const Order = require('../models/order');
 
 const UserSchema = new Schema({
     name: {
@@ -21,7 +22,7 @@ const UserSchema = new Schema({
     }
 });
 
-UserSchema.methods.addToCart = async function (product){
+UserSchema.methods.addToCart = function (product){
     try{
         const cartItems = this.cart.items;
 
@@ -34,7 +35,38 @@ UserSchema.methods.addToCart = async function (product){
             cartItems.push({productId: product._id, quantity: 1});
         }
 
-        return await this.save();
+        return this.save();
+    }
+    catch(err){
+        console.error(err);
+    }
+}
+
+UserSchema.methods.deleteCartItem = function(prodId){
+    try{
+        const updatedItems = this.cart.items.filter(item => item.productId._id.toString() !== prodId.toString());
+        this.cart.items = updatedItems;
+        return this.save();
+    }   
+    catch(err){
+        console.error(err);
+    }
+}
+
+UserSchema.methods.addOrder = function(){
+    try{
+        cartProducts = this.cart.items.map(item => {
+            return{
+                quantity: item.quantity,
+                title: item.productId.title
+            };
+        });
+        const order = new Order({products: cartProducts, userId: this._id});
+        this.cart.items = [];
+        return Promise.all([
+            order.save(),
+            this.save()
+        ]);
     }
     catch(err){
         console.error(err);
@@ -42,66 +74,4 @@ UserSchema.methods.addToCart = async function (product){
 }
 
 module.exports = mongoose.model('User', UserSchema);
-
-
-// const mongodb = require('mongodb');
-// const {getDb} = require('../util/database');
-
-// class User{
-//     constructor(name, email, cart, id){
-//         this.name = name;
-//         this.email = email;
-//         this.cart = cart ? cart: {'items':[]};  //{items: []}
-
-//         this._id = new mongodb.ObjectId(id);
-//     }
-//     deleteCartItem(prodId){
-//         try{
-//             const db = getDb();
-//             const updatedCartItems = this.cart.items.filter(item => item.productId.toString() !== prodId.toString());
-//             const updatedCart = {items: updatedCartItems};
-//             return db.collection('Users').updateOne(
-//                 {_id: new mongodb.ObjectId(this._id)}, 
-//                 {$set: {cart: updatedCart}}
-//             );
-//         }   
-//         catch(err){
-//             console.error(err);
-//         }
-//     }
-
-//     async addOrder(){
-//         try{
-//             const db = getDb();
-//             const cartProducts = await this.getCartItems();
-//             const order = {
-//                 products: cartProducts,
-//                 userId: new mongodb.ObjectId(this._id)
-//             }
-//             await db.collection('Orders').insertOne(order);
-
-//             this.cart.items = [];
-
-//             await db.collection('Users').updateOne({_id: new mongodb.ObjectId(this._id)}, {$set: {cart: this.cart}});
-
-//         }
-//         catch(err){
-//             console.error(err);
-//         }
-//     }
-
-//     getOrders(){
-//         try{
-//             const db = getDb();
-//             return db.collection('Orders').find({userId: new mongodb.ObjectId(this._id)}).toArray();
-//         }
-//         catch(err){
-//             console.error(err);
-//         }
-//     }
-
-
-
-
-// }
 

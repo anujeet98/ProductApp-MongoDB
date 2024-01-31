@@ -1,4 +1,5 @@
 const Product = require('../models/product');
+const Order = require('../models/order');
 
 exports.getProducts = async(req, res, next) => {
     try{
@@ -65,7 +66,7 @@ exports.postCart = async(req, res, next) => {
         const prodId = req.body.productId;    
         const product = await Product.findById(prodId);
 
-        const result = await req.user.addToCart(product);
+        await req.user.addToCart(product);
         res.redirect('/cart');
     }
     catch(err){
@@ -76,14 +77,7 @@ exports.postCart = async(req, res, next) => {
 
 exports.postCartDeleteProduct = async(req, res, next) => {
     try{
-        const prodId = req.body.productId;
-
-        const updatedItems = req.user.cart.items.filter(item => item.productId._id.toString() !== prodId.toString());
-
-        req.user.cart.items = updatedItems;
-
-        await req.user.save();
-
+        await req.user.deleteCartItem(req.body.productId);
         res.redirect('/cart');
     }
     catch(err){
@@ -93,7 +87,8 @@ exports.postCartDeleteProduct = async(req, res, next) => {
 
 exports.postOrder = async(req, res, next) => {
     try{
-        await req.user.addOrder();
+        const user = await req.user.populate('cart.items.productId', 'title');
+        await user.addOrder();
         res.redirect('/orders');
     }
     catch(err){
@@ -103,7 +98,7 @@ exports.postOrder = async(req, res, next) => {
 
 exports.getOrders = async(req, res, next) => {
     try{
-        const orders = await req.user.getOrders();
+        const orders = await Order.find({userId: req.user._id});
         res.render('shop/orders', {
           path: '/orders',
           pageTitle: 'Your Orders',
