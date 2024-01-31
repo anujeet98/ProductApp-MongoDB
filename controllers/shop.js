@@ -77,7 +77,12 @@ exports.postCart = async(req, res, next) => {
 exports.postCartDeleteProduct = async(req, res, next) => {
     try{
         const prodId = req.body.productId;
-        const result = await req.user.deleteCartItem(prodId);
+
+        const updatedItems = req.user.cart.items.filter(item => item.productId._id.toString() !== prodId.toString());
+
+        req.user.cart.items = updatedItems;
+
+        await req.user.save();
 
         res.redirect('/cart');
     }
